@@ -18,13 +18,13 @@ namespace AillieoUtils
             return (target.matchingChannel & item.matchingChannel) != 0;
         }
 
-        public static ScrollRect FindScrollRect(DragDropItem item)
+        public static T FindComponentUpward<T>(Transform trans) where T : Component
         {
-            Transform parent = item.transform.parent;
-            ScrollRect ret = null;
+            Transform parent = trans.parent;
+            T ret = null;
             while (parent)
             {
-                ret = parent.GetComponent<ScrollRect>();
+                ret = parent.GetComponent<T>();
                 if (ret)
                 {
                     break;
@@ -34,7 +34,17 @@ namespace AillieoUtils
             return ret;
         }
 
-        public static bool TryAttachItem(DragDropItem item, DragDropTarget target)
+        public static void TransferEventToScrollRect(PointerEventData eventData, ScrollRect scrollRect)
+        {
+            GameObject scrollRectObj = scrollRect.gameObject;
+            eventData.pointerEnter = scrollRectObj;
+            eventData.pointerPress = scrollRectObj;
+            eventData.rawPointerPress = scrollRectObj;
+            eventData.pointerDrag = scrollRectObj;
+            scrollRect.OnBeginDrag(eventData);
+        }
+
+        public static bool InitializePair(DragDropItem item, DragDropTarget target)
         {
             item.SetInitialTarget(target);
             return true;

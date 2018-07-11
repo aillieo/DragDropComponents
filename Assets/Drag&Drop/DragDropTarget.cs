@@ -92,7 +92,7 @@ namespace AillieoUtils
         #endregion 拖放事件接口
 
 
-        public bool CheckCanAttachItem(DragDropEventData eventData, out DragDropItem replacedItem)
+        internal bool CheckCanAttachItem(DragDropEventData eventData, out DragDropItem replacedItem)
         {
             replacedItem = null;
 
@@ -111,7 +111,7 @@ namespace AillieoUtils
             return true;
         }
 
-        public bool AddInitialAttachedItem(DragDropItem item)
+        internal bool AddInitialAttachedItem(DragDropItem item)
         {
             bool contain = attachedItems.Contains(item);
 

@@ -108,7 +108,7 @@ namespace AillieoUtils
         {
             if(!parentWhenDragging)
             {
-                parentWhenDragging = transform.parent;
+                parentWhenDragging = DragDropHelper.FindComponentUpward<Canvas>(transform).transform;
             }
 
             if (!rectTransform)
@@ -118,7 +118,7 @@ namespace AillieoUtils
 
             if(!freeItem)
             {
-                DragDropHelper.TryAttachItem(this,attachedTarget);
+                DragDropHelper.InitializePair(this,attachedTarget);
             }
 
             if(delayDetach)
@@ -128,7 +128,7 @@ namespace AillieoUtils
         }
 
 
-        public void SetInitialTarget(DragDropTarget target)
+        internal void SetInitialTarget(DragDropTarget target)
         {
             if(!potentialTargets.Contains(target))
             {
@@ -184,7 +184,7 @@ namespace AillieoUtils
             }
 
             currentEventData.Reset();
-            scrollRect = null;
+            scrollRect = DragDropHelper.FindComponentUpward<ScrollRect>(transform);
             currentEventData.item = this;
             currentEventData.eligibleForClick = true;
 
@@ -208,7 +208,14 @@ namespace AillieoUtils
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if(!waitingForDragDropStart)
+            if (waitingForDragDropStart)
+            {
+                if(scrollRect)
+                {
+                    DragDropHelper.TransferEventToScrollRect(eventData, scrollRect);
+                }
+            }
+            else
             {
                 currentEventData.eligibleForClick = false;
                 HandleDragDropEvent();
@@ -231,7 +238,11 @@ namespace AillieoUtils
 
             if (rectTransform)
             {
-                rectTransform.anchoredPosition += eventData.delta;
+                Vector3 pointerPos;
+                if (RectTransformUtility.ScreenPointToWorldPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out pointerPos))
+                {
+                    rectTransform.position = pointerPos;
+                }
             }
 
             DragDropTarget newTarget = FindDropTarget(eventData);
@@ -246,7 +257,6 @@ namespace AillieoUtils
 
         public void OnPointerUp(PointerEventData eventData)
         {
-
             if(currentEventData.eligibleForClick)
             {
                 OnClick(currentEventData);
@@ -396,6 +406,7 @@ namespace AillieoUtils
         {
             waitingForDragDropStart = true;
             yield return waitForSeconds;
+            waitingForDragDropStart = false;
             HandleDragDropEvent();
         }
 
@@ -421,6 +432,10 @@ namespace AillieoUtils
         {
             foreach (var ddt in potentialTargets)
             {
+                if(!ddt.isActiveAndEnabled)
+                {
+                    continue;
+                }
                 if(!DragDropHelper.IsChannelMatch(ddt,this))
                 {
                     continue;

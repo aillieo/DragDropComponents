@@ -36,7 +36,7 @@ public class TestScript : MonoBehaviour {
 
     Action<DragDropEventData> targetOnDetach = (DragDropEventData eventData) => {
         eventData.item.transform.SetParent(eventData.target.targetParent);
-        eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        //eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         Debug.Log("targetOnDetach");
     };
 
@@ -54,6 +54,10 @@ public class TestScript : MonoBehaviour {
         eventData.item.transform.localScale = Vector3.one;
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         Debug.Log("itemsOnSetFree");
+    };
+
+    Action<DragDropEventData> itemsOnClick = (DragDropEventData eventData) => {
+        Debug.Log("itemsOnClick");
     };
 
 
@@ -79,6 +83,7 @@ public class TestScript : MonoBehaviour {
             item.AddCallback(DragDropEventTriggerType.ItemEnter, itemsOnEnter);
             item.AddCallback(DragDropEventTriggerType.ItemExit, itemsOnExit);
             item.AddCallback(DragDropEventTriggerType.ItemSetFree, itemsOnSetFree);
+            item.AddCallback(DragDropEventTriggerType.ItemClick, itemsOnClick);
         }
 
     }
