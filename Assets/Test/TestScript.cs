@@ -8,12 +8,12 @@ public class TestScript : MonoBehaviour {
 
 
     Action<DragDropEventData> targetsOnEnter = (DragDropEventData eventData) => {
-        eventData.target.targetParent.localScale = Vector3.one * 1.2f;
+        eventData.target.transform.localScale = Vector3.one * 1.2f;
         Debug.Log("targetsOnEnter");
     };
 
     Action<DragDropEventData> targetsOnExit = (DragDropEventData eventData) => {
-        eventData.target.targetParent.localScale = Vector3.one;
+        eventData.target.transform.localScale = Vector3.one;
         Debug.Log("targetsOnExit");
     };
 
@@ -30,7 +30,7 @@ public class TestScript : MonoBehaviour {
     };
 
     Action<DragDropEventData> targetOnAttach = (DragDropEventData eventData) => {
-        eventData.target.targetParent.localScale = Vector3.one;
+        eventData.target.transform.localScale = Vector3.one;
         Debug.Log("targetOnAttach");
     };
 
@@ -84,8 +84,12 @@ public class TestScript : MonoBehaviour {
             item.AddCallback(DragDropEventTriggerType.ItemExit, itemsOnExit);
             item.AddCallback(DragDropEventTriggerType.ItemSetFree, itemsOnSetFree);
             item.AddCallback(DragDropEventTriggerType.ItemClick, itemsOnClick);
+            DragDropTarget target = DragDropHelper.FindComponentUpward<DragDropTarget>(item.transform);
+            if (target != null)
+            {
+                DragDropHelper.InitializePair(item, target);
+            }
         }
-
     }
 	
 }
