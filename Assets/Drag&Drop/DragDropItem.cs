@@ -86,8 +86,6 @@ namespace AillieoUtils
         Transform lastParent = null;
 
         RectTransform rectTransform;
-        Vector3 localPositon;
-        Vector2 anchoredPosition;
         WaitForSeconds waitForSeconds = null;
 
         ScrollRect scrollRect = null;
@@ -177,11 +175,6 @@ namespace AillieoUtils
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            localPositon = transform.localPosition;
-            if(rectTransform)
-            {
-                anchoredPosition = rectTransform.anchoredPosition;
-            }
 
             currentEventData.Reset();
             scrollRect = DragDropHelper.FindComponentUpward<ScrollRect>(transform);

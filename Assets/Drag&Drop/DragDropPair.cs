@@ -10,6 +10,8 @@ using System;
 namespace AillieoUtils
 {
 
+    [RequireComponent(typeof(RectTransform))]
+    [DisallowMultipleComponent]
     public abstract class DragDropPair : MonoBehaviour
     {
         protected Dictionary<DragDropEventTriggerType, Action<DragDropEventData>> csCallbacks = new Dictionary<DragDropEventTriggerType, Action<DragDropEventData>>();

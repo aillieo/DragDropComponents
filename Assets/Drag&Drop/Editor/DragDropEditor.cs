@@ -6,6 +6,7 @@ using UnityEditor;
 namespace AillieoUtils
 {
     [CustomEditor(typeof(DragDropItem))]
+    [CanEditMultipleObjects]
     public class DragDropItemEditor : Editor
     {
         public override void OnInspectorGUI()
@@ -17,6 +18,7 @@ namespace AillieoUtils
 
 
     [CustomEditor(typeof(DragDropTarget))]
+    [CanEditMultipleObjects]
     public class DragDropTargetEditor : Editor
     {
         public override void OnInspectorGUI()
