@@ -51,7 +51,7 @@ namespace AillieoUtils
         }
 
 
-        public static bool TryDetachItem(DragDropItem item, DragDropTarget target)
+        public static bool TryRemoveItem(DragDropItem item, DragDropTarget target)
         {
             if(item.attachedTarget == target && target.HasItemAttached(item))
             {
@@ -62,6 +62,8 @@ namespace AillieoUtils
                 eventData.item = item;
                 target.OnItemDetach(eventData);
                 item.OnItemDetach(eventData);
+                target.OnItemExit(eventData);
+                item.OnItemExit(eventData);
                 item.OnSetFree(eventData);
                 return true;
             }
@@ -72,7 +74,7 @@ namespace AillieoUtils
         }
 
 
-        public static int DetachAllItems(DragDropTarget target)
+        public static int RemoveAllItems(DragDropTarget target)
         {
             var items = target.GetAllAttachedItems();
             DragDropEventData eventData = new DragDropEventData();
@@ -84,6 +86,8 @@ namespace AillieoUtils
                 eventData.item = item;
                 target.OnItemDetach(eventData);
                 item.OnItemDetach(eventData);
+                target.OnItemExit(eventData);
+                item.OnItemExit(eventData);
                 item.OnSetFree(eventData);
             }
             return items.Length;
