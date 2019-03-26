@@ -11,27 +11,19 @@ namespace AillieoUtils
     {
 
         [SerializeField]
-        [Tooltip("当有item附着到此target时 会以此为父节点")]
-        private Transform m_targetParent;
-        public Transform targetParent { get { return m_targetParent; } private set { m_targetParent = value; } }
-
-
-        [SerializeField]
         [Tooltip("最多可以附着多少个item")]
         private int m_maxItemCount = 1;
         public int maxItemCount { get { return m_maxItemCount; } private set { m_maxItemCount = value; } }
 
 
         [SerializeField]
-        [Tooltip("用于标记此target的范围")]
-        private RectTransform m_rectTransform;
-        public RectTransform rectTransform { get { return m_rectTransform; } private set { m_rectTransform = value; } }
-
-
-        [SerializeField]
         [Tooltip("当超出可容纳的item时 是否踢掉最早挂上来的")]
         private bool m_replaceItem;
         public bool replaceItem { get { return m_replaceItem; } }
+
+        public Transform targetParent { get { return transform; } }
+
+        private LinkedListNode<DragDropTarget> registerHandle;
 
 
         // 当前附着了多少个item
@@ -47,22 +39,16 @@ namespace AillieoUtils
         List<DragDropItem> attachedItems = new List<DragDropItem>();
 
 
-        void Start()
+        private void OnEnable()
         {
-            if (!targetParent)
-            {
-                targetParent = transform;
-            }
+            maxItemCount = Mathf.Max(maxItemCount,1);
+            registerHandle = DragDropRegistry.Instance.Register(this);
+        }
 
-            if (!rectTransform)
-            {
-                rectTransform = GetComponent<RectTransform>();
-            }
-
-            if(maxItemCount < 1)
-            {
-                maxItemCount = 1;
-            }
+        private void OnDisable()
+        {
+            DragDropRegistry.Instance.UnRegister(registerHandle);
+            registerHandle = null;
         }
 
         #region 拖放事件接口
@@ -140,7 +126,7 @@ namespace AillieoUtils
 
 
         StringBuilder sb = new StringBuilder();
-        public string GetDebugString()
+        public override string GetDebugString()
         {
 #if UNITY_EDITOR
             sb.Remove(0, sb.Length);
@@ -155,8 +141,9 @@ namespace AillieoUtils
             }
 
             return string.Format("<b>attachedItems</b> = \n[{0}]",sb.ToString());
-#endif
+#else
             return "";
+#endif
         }
 
     }

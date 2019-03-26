@@ -5,27 +5,22 @@ using UnityEditor;
 
 namespace AillieoUtils
 {
-    [CustomEditor(typeof(DragDropItem))]
+    [CustomEditor(typeof(DragDropPair),true)]
     [CanEditMultipleObjects]
     public class DragDropItemEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
-            GUILayout.Label(((DragDropItem)target).GetDebugString(), new GUIStyle { richText = true });
+            GUILayout.Label(((DragDropPair)target).GetDebugString(), new GUIStyle { richText = true });
         }
-    }
 
-
-    [CustomEditor(typeof(DragDropTarget))]
-    [CanEditMultipleObjects]
-    public class DragDropTargetEditor : Editor
-    {
-        public override void OnInspectorGUI()
+        public override bool RequiresConstantRepaint()
         {
-            DrawDefaultInspector();
-            GUILayout.Label(((DragDropTarget)target).GetDebugString(), new GUIStyle { richText = true });
+            return Application.isPlaying;
         }
+
     }
+
 }
 

@@ -7,83 +7,81 @@ using AillieoUtils;
 public class TestScript : MonoBehaviour {
 
 
-    Action<DragDropEventData> targetsOnEnter = (DragDropEventData eventData) => {
+    void TargetsOnEnter(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one * 1.2f;
         Debug.Log("targetsOnEnter");
-    };
+    }
 
-    Action<DragDropEventData> targetsOnExit = (DragDropEventData eventData) => {
+    void TargetsOnExit(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one;
         Debug.Log("targetsOnExit");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnAttach = (DragDropEventData eventData) => {
+    void ItemsOnAttach(DragDropEventData eventData){
         eventData.item.transform.SetParent(eventData.target.targetParent);
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         eventData.item.transform.localScale = Vector3.one;
         Debug.Log("itemsOnAttach");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnDetach = (DragDropEventData eventData) => {
+    void ItemsOnDetach(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one * 1.2f;
         Debug.Log("itemsOnDetach");
-    };
+    }
 
-    Action<DragDropEventData> targetOnAttach = (DragDropEventData eventData) => {
+    void TargetOnAttach(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one;
         Debug.Log("targetOnAttach");
-    };
+    }
 
-    Action<DragDropEventData> targetOnDetach = (DragDropEventData eventData) => {
+    void TargetOnDetach(DragDropEventData eventData){
         eventData.item.transform.SetParent(eventData.target.targetParent);
         //eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         Debug.Log("targetOnDetach");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnEnter = (DragDropEventData eventData) => {
+    void ItemsOnEnter(DragDropEventData eventData){
         //eventData.item.transform.localScale = Vector3.one * 1.2f;
         Debug.Log("itemsOnEnter");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnExit = (DragDropEventData eventData) => {
+    void ItemsOnExit(DragDropEventData eventData){
         //eventData.item.transform.localScale = Vector3.one;
         Debug.Log("itemsOnExit");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnSetFree = (DragDropEventData eventData) => {
+    void ItemsOnSetFree(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one;
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         Debug.Log("itemsOnSetFree");
-    };
+    }
 
-    Action<DragDropEventData> itemsOnClick = (DragDropEventData eventData) => {
+    void ItemsOnClick(DragDropEventData eventData){
         Debug.Log("itemsOnClick");
-    };
+    }
 
 
-    void Start () {
-
+    void Start() {
 
         var allTargets = GetComponentsInChildren<DragDropTarget>();
         var allItems = GetComponentsInChildren<DragDropItem>();
 
         foreach (var target in allTargets)
         {
-            target.AddCallback(DragDropEventTriggerType.ItemEnter, targetsOnEnter);
-            target.AddCallback(DragDropEventTriggerType.ItemExit, targetsOnExit);
-            target.AddCallback(DragDropEventTriggerType.ItemAttach, targetOnAttach);
-            target.AddCallback(DragDropEventTriggerType.ItemDetach, targetOnDetach);
+            target.AddCallback(DragDropEventTriggerType.ItemEnter, TargetsOnEnter);
+            target.AddCallback(DragDropEventTriggerType.ItemExit, TargetsOnExit);
+            target.AddCallback(DragDropEventTriggerType.ItemAttach, TargetOnAttach);
+            target.AddCallback(DragDropEventTriggerType.ItemDetach, TargetOnDetach);
         }
 
         foreach (var item in allItems)
         {
-            item.SetTargetsByRootObject(gameObject);
-            item.AddCallback(DragDropEventTriggerType.ItemAttach, itemsOnAttach);
-            item.AddCallback(DragDropEventTriggerType.ItemDetach, itemsOnDetach);
-            item.AddCallback(DragDropEventTriggerType.ItemEnter, itemsOnEnter);
-            item.AddCallback(DragDropEventTriggerType.ItemExit, itemsOnExit);
-            item.AddCallback(DragDropEventTriggerType.ItemSetFree, itemsOnSetFree);
-            item.AddCallback(DragDropEventTriggerType.ItemClick, itemsOnClick);
+            item.AddCallback(DragDropEventTriggerType.ItemAttach, ItemsOnAttach);
+            item.AddCallback(DragDropEventTriggerType.ItemDetach, ItemsOnDetach);
+            item.AddCallback(DragDropEventTriggerType.ItemEnter, ItemsOnEnter);
+            item.AddCallback(DragDropEventTriggerType.ItemExit, ItemsOnExit);
+            item.AddCallback(DragDropEventTriggerType.ItemSetFree, ItemsOnSetFree);
+            item.AddCallback(DragDropEventTriggerType.ItemClick, ItemsOnClick);
             DragDropTarget target = DragDropHelper.FindComponentUpward<DragDropTarget>(item.transform);
             if (target != null)
             {
@@ -91,5 +89,4 @@ public class TestScript : MonoBehaviour {
             }
         }
     }
-	
 }

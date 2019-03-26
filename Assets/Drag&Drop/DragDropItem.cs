@@ -10,8 +10,19 @@ namespace AillieoUtils
     public class DragDropItem : DragDropPair, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
 
+        [SerializeField]
         [Tooltip("拖动期间的临时父节点")]
-        public Transform parentWhenDragging;
+        private Transform m_parentWhenDragging;
+        public Transform parentWhenDragging {
+            get
+            {
+                if(!m_parentWhenDragging)
+                {
+                    m_parentWhenDragging = DragDropHelper.FindComponentUpward<Canvas>(transform).transform;
+                }
+                return m_parentWhenDragging;
+            }
+        }
 
         [Tooltip("当被拖拽到空白处时 返回上次的target")]
         public bool attachBackWhenSetFree = true;
@@ -80,20 +91,26 @@ namespace AillieoUtils
         }
 
 
-
-        DragDropEventData currentEventData = new DragDropEventData();
         DragDropTarget lastTarget = null;
         Transform lastParent = null;
 
-        RectTransform rectTransform;
-        WaitForSeconds waitForSeconds = null;
+        WaitForSeconds m_waitForSeconds;
+        WaitForSeconds waitForSeconds {
+            get
+            {
+                if (m_waitForSeconds == null)
+                {
+                    m_waitForSeconds = new WaitForSeconds(longPressDetach);
+                }
+                return m_waitForSeconds;
+            }
+            set
+            {
+                m_waitForSeconds = value;
+            }
+        }
 
         ScrollRect scrollRect = null;
-
-
-        // 可能附着的target列表
-        List<DragDropTarget> potentialTargets = new List<DragDropTarget>();
-
 
 
         bool freeItem { get { return attachedTarget == null; }}
@@ -101,38 +118,17 @@ namespace AillieoUtils
 
         bool delayDetach { get { return longPressDetach > 0; }}
 
-
-        void Start()
+        private void Awake()
         {
-            if(!parentWhenDragging)
+            if (!freeItem)
             {
-                parentWhenDragging = DragDropHelper.FindComponentUpward<Canvas>(transform).transform;
-            }
-
-            if (!rectTransform)
-            {
-                rectTransform = GetComponent<RectTransform>();
-            }
-
-            if(!freeItem)
-            {
-                DragDropHelper.InitializePair(this,attachedTarget);
-            }
-
-            if(delayDetach)
-            {
-                waitForSeconds = new WaitForSeconds(longPressDetach);
+                DragDropHelper.InitializePair(this, attachedTarget);
             }
         }
 
 
         internal void SetInitialTarget(DragDropTarget target)
         {
-            if(!potentialTargets.Contains(target))
-            {
-                potentialTargets.Add(target);
-            }
-
             if(freeItem)
             {
                 attachedTarget = target;
@@ -155,31 +151,16 @@ namespace AillieoUtils
         }
 
 
-        // 获取root 下所有带有DragDropTarget的对象并保存
-        List<DragDropTarget> tempList = new List<DragDropTarget>();
-        public void SetTargetsByRootObject(GameObject root)
-        {
-            potentialTargets.Clear();
-            if(root)
-            {
-                tempList.AddRange(root.GetComponentsInChildren<DragDropTarget>());
-                //potentialTargets.AddRange(tempList.FindAll((DragDropTarget ddt) => { return DragDropHelper.IsChannelMatch(ddt, this); }));
-                potentialTargets.AddRange(tempList);
-                tempList.Clear();
-            }
-        }
-
-
         #region 原生事件接口
 
 
         public void OnPointerDown(PointerEventData eventData)
         {
 
-            currentEventData.Reset();
+            DragDropEventData.current.Reset();
             scrollRect = DragDropHelper.FindComponentUpward<ScrollRect>(transform);
-            currentEventData.item = this;
-            currentEventData.eligibleForClick = true;
+            DragDropEventData.current.item = this;
+            DragDropEventData.current.eligibleForClick = true;
 
             if (attachedTarget)
             {
@@ -210,7 +191,7 @@ namespace AillieoUtils
             }
             else
             {
-                currentEventData.eligibleForClick = false;
+                DragDropEventData.current.eligibleForClick = false;
                 HandleDragDropEvent();
             }
 
@@ -238,10 +219,10 @@ namespace AillieoUtils
                 }
             }
 
-            DragDropTarget newTarget = FindDropTarget(eventData);
-            if (newTarget != currentEventData.target)
+            DragDropTarget newTarget = DragDropRegistry.Instance.FindDropTarget(eventData,this);
+            if (newTarget != DragDropEventData.current.target)
             {
-                ReplaceDropTarget(currentEventData.target, newTarget);
+                ReplaceDropTarget(DragDropEventData.current.target, newTarget);
             }
             
         }
@@ -250,70 +231,71 @@ namespace AillieoUtils
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            if(currentEventData.eligibleForClick)
+            if(DragDropEventData.current.eligibleForClick)
             {
-                OnClick(currentEventData);
+                OnClick(DragDropEventData.current);
             }
 
             if (!HandlingDragDropEvent())
             {
+                DragDropEventData.current.Reset();
                 return;
             }
 
-            if (currentEventData.valid)
+            if (DragDropEventData.current.valid)
             {
                 DragDropItem replacedItem = null;
-                if(currentEventData.target.CheckCanAttachItem(currentEventData, out replacedItem))
+                if(DragDropEventData.current.target.CheckCanAttachItem(DragDropEventData.current, out replacedItem))
                 {
                     if(replacedItem)
                     {
                         // 旧item 离开
-                        currentEventData.isReplaced = true;
-                        currentEventData.item = replacedItem;
-                        currentEventData.target.OnItemDetach(currentEventData);
-                        replacedItem.OnItemDetach(currentEventData);
+                        DragDropEventData.current.isReplaced = true;
+                        DragDropEventData.current.item = replacedItem;
+                        DragDropEventData.current.target.OnItemDetach(DragDropEventData.current);
+                        replacedItem.OnItemDetach(DragDropEventData.current);
 
                         // 新item 附着
-                        currentEventData.isReplaced = false;
-                        currentEventData.item = this;
-                        currentEventData.target.OnItemAttach(currentEventData);
-                        OnItemAttach(currentEventData);
+                        DragDropEventData.current.isReplaced = false;
+                        DragDropEventData.current.item = this;
+                        DragDropEventData.current.target.OnItemAttach(DragDropEventData.current);
+                        OnItemAttach(DragDropEventData.current);
 
                         // 旧item 附着到新item原来的target 完成交换
-                        currentEventData.isReplaced = true;
-                        currentEventData.item = replacedItem;
-                        currentEventData.target = lastTarget;
-                        if (currentEventData.valid)
+                        DragDropEventData.current.isReplaced = true;
+                        DragDropEventData.current.item = replacedItem;
+                        DragDropEventData.current.target = lastTarget;
+                        if (DragDropEventData.current.valid)
                         {
-                            lastTarget.OnItemAttach(currentEventData);
-                            replacedItem.OnItemAttach(currentEventData);
+                            lastTarget.OnItemAttach(DragDropEventData.current);
+                            replacedItem.OnItemAttach(DragDropEventData.current);
                         }
                         else
                         {
                             replacedItem.attachedTarget = null;
-                            replacedItem.OnSetFree(currentEventData);
+                            replacedItem.OnSetFree(DragDropEventData.current);
                         }
                     }
                     else
                     {
-                        currentEventData.target.OnItemAttach(currentEventData);
-                        OnItemAttach(currentEventData);
+                        DragDropEventData.current.target.OnItemAttach(DragDropEventData.current);
+                        OnItemAttach(DragDropEventData.current);
                     }
 
                 }
                 else
                 {
-                    currentEventData.target.OnItemExit(currentEventData);
-                    OnItemExit(currentEventData);
+                    DragDropEventData.current.target.OnItemExit(DragDropEventData.current);
+                    OnItemExit(DragDropEventData.current);
                 }
             }
             else
             {
-                OnSetFree(currentEventData);
+                OnSetFree(DragDropEventData.current);
             }
 
 
-            currentEventData.Reset();
+            DragDropEventData.current.Reset();
 
         }
 
@@ -347,7 +329,7 @@ namespace AillieoUtils
 
         public void OnItemExit(DragDropEventData eventData)
         {
-            HandleEventForType(DragDropEventTriggerType.ItemExit, currentEventData);
+            HandleEventForType(DragDropEventTriggerType.ItemExit, eventData);
         }
 
         public void OnItemEnter(DragDropEventData eventData)
@@ -383,13 +365,13 @@ namespace AillieoUtils
 
         void HandleDragDropEvent()
         {
-            currentEventData.eligibleForClick = false;
-            currentEventData.eligibleForDrag = true;
+            DragDropEventData.current.eligibleForClick = false;
+            DragDropEventData.current.eligibleForDrag = true;
             if (!freeItem)
             {
-                currentEventData.target = attachedTarget;
-                attachedTarget.OnItemDetach(currentEventData);
-                OnItemDetach(currentEventData);
+                DragDropEventData.current.target = attachedTarget;
+                attachedTarget.OnItemDetach(DragDropEventData.current);
+                OnItemDetach(DragDropEventData.current);
                 attachedTarget = null;
             }
             transform.SetParent(parentWhenDragging);
@@ -405,7 +387,7 @@ namespace AillieoUtils
 
         bool HandlingDragDropEvent()
         {
-            if(currentEventData.eligibleForDrag)
+            if(DragDropEventData.current.eligibleForDrag)
             {
                 return true;
             }
@@ -415,33 +397,10 @@ namespace AillieoUtils
                 {
                     waitingForDragDropStart = false;
                     StopAllCoroutines();
-                    currentEventData.Reset();
+                    DragDropEventData.current.Reset();
                 }
                 return false;
             }
-        }
-
-        DragDropTarget FindDropTarget(PointerEventData pointerEventData)
-        {
-            foreach (var ddt in potentialTargets)
-            {
-                if(!ddt.isActiveAndEnabled)
-                {
-                    continue;
-                }
-                if(!DragDropHelper.IsChannelMatch(ddt,this))
-                {
-                    continue;
-                }
-                bool contain = RectTransformUtility.RectangleContainsScreenPoint(ddt.rectTransform, 
-                    pointerEventData.position, 
-                    pointerEventData.pressEventCamera);
-                if(contain)
-                {
-                    return ddt;
-                }
-            }
-            return null;
         }
 
 
@@ -454,24 +413,25 @@ namespace AillieoUtils
 
             if(oldTarget)
             {
-                oldTarget.OnItemExit(currentEventData);
-                OnItemExit(currentEventData);
+                oldTarget.OnItemExit(DragDropEventData.current);
+                OnItemExit(DragDropEventData.current);
             }
-            currentEventData.target = newTarget;
+            DragDropEventData.current.target = newTarget;
             if(newTarget)
             {
-                newTarget.OnItemEnter(currentEventData);
-                OnItemEnter(currentEventData);
+                newTarget.OnItemEnter(DragDropEventData.current);
+                OnItemEnter(DragDropEventData.current);
             }
         }
 
 
-        public string GetDebugString()
+        public override string GetDebugString()
         {
 #if UNITY_EDITOR
-            return string.Format("<b>lastParent</b> = {0}\n<b>lastTarget</b> = {1}\n<b>rectTransform</b> = {2}\n<b>currentEventData</b> = {3}", lastParent,lastTarget,rectTransform,currentEventData);
-#endif
+            return string.Format("<b>lastParent</b> = {0}\n<b>lastTarget</b> = {1}\n<b>currentEventData</b> = {2}", lastParent,lastTarget,DragDropEventData.current);
+#else
             return "";
+#endif
         }
 
     }

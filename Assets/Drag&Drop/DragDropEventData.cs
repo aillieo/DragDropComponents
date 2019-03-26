@@ -17,8 +17,9 @@
     }
 
 
-    public struct DragDropEventData
+    public class DragDropEventData
     {
+        public static DragDropEventData current = new DragDropEventData();
 
         DragDropItem m_item;
         DragDropTarget m_target;
@@ -93,8 +94,9 @@
         {
 #if UNITY_EDITOR
             return string.Format("\n---\n   <b>matchingChannel</b> = {0} \n   <b>item</b> = {1} \n   <b>target</b> = {2}\n---", matchingChannel, item,target);
-#endif
+#else
             return "";
+#endif
         }
 
     }
