@@ -1,4 +1,7 @@
-﻿namespace AillieoUtils
+﻿using System;
+using System.Text;
+
+namespace AillieoUtils
 {
 
     public enum DragDropEventTriggerType
@@ -93,7 +96,17 @@
         public override string ToString()
         {
 #if UNITY_EDITOR
-            return string.Format("\n---\n   <b>matchingChannel</b> = {0} \n   <b>item</b> = {1} \n   <b>target</b> = {2}\n---", matchingChannel, item,target);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("\n---");
+            sb.AppendFormat(" <b>item</b> = {0} \n", item);
+            sb.AppendFormat(" <b>target</b> = {0} \n", target);
+            sb.AppendFormat(" <b>matchingChannel</b> = B{0} \n", Convert.ToString(matchingChannel, 2));
+            sb.AppendFormat(" <b>external</b> = {0} \n", external);
+            sb.AppendFormat(" <b>eligibleForDrag</b> = {0} \n", eligibleForDrag);
+            sb.AppendFormat(" <b>eligibleForClick</b> = {0} \n", eligibleForClick);
+            sb.AppendFormat(" <b>isReplaced</b> = {0} \n", isReplaced);
+            sb.Append("---");
+            return sb.ToString();
 #else
             return "";
 #endif

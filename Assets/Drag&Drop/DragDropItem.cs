@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,11 +25,6 @@ namespace AillieoUtils
             }
         }
 
-        [Tooltip("当被拖拽到空白处时 返回上次的target")]
-        public bool attachBackWhenSetFree = true;
-
-        [SerializeField]
-        [Tooltip("初始状态的附着target")]
         private DragDropTarget m_attachedTarget;
         public DragDropTarget attachedTarget { get { return m_attachedTarget; } private set { m_attachedTarget = value; } }
 
@@ -64,35 +60,22 @@ namespace AillieoUtils
 
         [SerializeField]
         [Tooltip("如果被挤下来 会放到哪个节点下")]
-        private Transform m_fallbackParent;
-        public Transform fallbackParent
+        private DragDropTarget m_fallbackTarget;
+        public DragDropTarget fallbackTarget
         {
             get
             {
-                if(m_fallbackParent)
-                {
-                    return m_fallbackParent;
-                }
-                if(lastParent)
-                {
-                    return lastParent;
-                }
-                if(lastTarget)
-                {
-                    return lastTarget.targetParent;
-                }
-                return null;
+                return m_fallbackTarget;
             }
 
             set
             {
-                m_fallbackParent = value;
+                m_fallbackTarget = value;
             }
         }
 
 
         DragDropTarget lastTarget = null;
-        Transform lastParent = null;
 
         WaitForSeconds m_waitForSeconds;
         WaitForSeconds waitForSeconds {
@@ -118,35 +101,27 @@ namespace AillieoUtils
 
         bool delayDetach { get { return longPressDetach > 0; }}
 
-        private void Awake()
+        void OnEnable()
         {
-            if (!freeItem)
+            Transform parent = transform.parent;
+            if(parent != null)
             {
-                DragDropHelper.InitializePair(this, attachedTarget);
+                DragDropTarget target = parent.gameObject.GetComponent<DragDropTarget>();
+                if(target != null)
+                {
+                    DragDropHelper.TryAddItem(this, target);
+                    return;
+                }
             }
+            Debug.LogError("parent is not a target");
+            gameObject.SetActive(false);
         }
 
-
-        internal void SetInitialTarget(DragDropTarget target)
+        void OnDisable()
         {
-            if(freeItem)
+            if(!freeItem)
             {
-                attachedTarget = target;
-            }
-
-            if(attachedTarget != target)
-            {
-                Debug.LogError("已经有初始target了");
-                return;
-            }
-
-            if (attachedTarget.AddInitialAttachedItem(this))
-            {
-                fallbackParent = attachedTarget.targetParent;
-            }
-            else
-            {
-                attachedTarget = null;
+                DragDropHelper.TryRemoveItem(this, attachedTarget);
             }
         }
 
@@ -165,11 +140,10 @@ namespace AillieoUtils
             if (attachedTarget)
             {
                 lastTarget = attachedTarget;
-                lastParent = attachedTarget.targetParent;
             }
             else
             {
-                lastParent = transform.parent;
+                Debug.LogError("will detach from a non-target parent");
             }
  
             if(delayDetach && !freeItem)
@@ -318,6 +292,7 @@ namespace AillieoUtils
         public void OnItemAttach(DragDropEventData eventData)
         {
             attachedTarget = eventData.target;
+            transform.SetParent(attachedTarget.targetParent,false);
             HandleEventForType(DragDropEventTriggerType.ItemAttach, eventData);
         }
 
@@ -339,7 +314,13 @@ namespace AillieoUtils
 
         public void OnSetFree(DragDropEventData eventData)
         {
-            if(lastTarget && attachBackWhenSetFree)
+            if(lastTarget && lastTarget.isActiveAndEnabled && !eventData.external)
+            {
+                eventData.target = lastTarget;
+                eventData.target.OnItemAttach(eventData);
+                OnItemAttach(eventData);
+            }
+            else if (fallbackTarget && fallbackTarget.isActiveAndEnabled && !eventData.external)
             {
                 eventData.target = lastTarget;
                 eventData.target.OnItemAttach(eventData);
@@ -347,10 +328,6 @@ namespace AillieoUtils
             }
             else
             {
-                if (fallbackParent)
-                {
-                    transform.SetParent(fallbackParent, false);
-                }
                 HandleEventForType(DragDropEventTriggerType.ItemSetFree, eventData);
             }
         }
@@ -428,7 +405,7 @@ namespace AillieoUtils
         public override string GetDebugString()
         {
 #if UNITY_EDITOR
-            return string.Format("<b>lastParent</b> = {0}\n<b>lastTarget</b> = {1}\n<b>currentEventData</b> = {2}", lastParent,lastTarget,DragDropEventData.current);
+            return string.Format("<b>matchingChannel</b> = B{0}\n<b>attachedTarget</b> = {1}\n<b>lastTarget</b> = {2}\n<b>currentEventData</b> = {3}", Convert.ToString(matchingChannel, 2),attachedTarget,lastTarget,DragDropEventData.current);
 #else
             return "";
 #endif

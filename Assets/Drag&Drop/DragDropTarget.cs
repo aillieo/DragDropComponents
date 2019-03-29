@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Text;
+using System;
 
 namespace AillieoUtils
 {
@@ -97,22 +98,6 @@ namespace AillieoUtils
             return true;
         }
 
-        internal bool AddInitialAttachedItem(DragDropItem item)
-        {
-            bool contain = attachedItems.Contains(item);
-
-            if (attachedItems.Count >= maxItemCount && !contain)
-            {
-                return false;
-            }
-
-            if(!contain)
-            {
-                attachedItems.Add(item);
-            }
-            return true;
-        }
-
         public DragDropItem[] GetAllAttachedItems()
         {
             return attachedItems.ToArray();
@@ -133,14 +118,10 @@ namespace AillieoUtils
 
             for (int i = 0; i < attachedItems.Count; ++ i)
             {
-                sb.Append(attachedItems[i].gameObject.name);
-                if(i != attachedItems.Count - 1)
-                {
-                    sb.Append(",");
-                }
+                sb.AppendLine(attachedItems[i].gameObject.name);
             }
 
-            return string.Format("<b>attachedItems</b> = \n[{0}]",sb.ToString());
+            return string.Format("<b>matchingChannel</b> = B{0}\n<b>attachedItems</b> = \n[\n{1}]", Convert.ToString(matchingChannel, 2),sb.ToString());
 #else
             return "";
 #endif

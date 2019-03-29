@@ -6,15 +6,11 @@ using UnityEngine.UI;
 
 namespace AillieoUtils
 {
-    public static class DragDropHelper
+    internal static class DragDropHelper
     {
 
         public static bool IsChannelMatch(DragDropTarget target, DragDropItem item)
         {
-            if(target.universalMatching || item.universalMatching)
-            {
-                return true;
-            }
             return (target.matchingChannel & item.matchingChannel) != 0;
         }
 
@@ -44,9 +40,30 @@ namespace AillieoUtils
             scrollRect.OnBeginDrag(eventData);
         }
 
-        public static bool InitializePair(DragDropItem item, DragDropTarget target)
+        public static bool TryAddItem(DragDropItem item, DragDropTarget target)
         {
-            item.SetInitialTarget(target);
+            if (item.attachedTarget != null)
+            {
+                return false;
+            }
+            if(!IsChannelMatch(target, item))
+            {
+                return false;
+            }
+            if(target.currentItemCount >= target.maxItemCount)
+            {
+                return false;
+            }
+
+            DragDropEventData eventData = new DragDropEventData();
+            eventData.Reset();
+            eventData.external = true;
+            eventData.target = target;
+            eventData.item = item;
+            target.OnItemEnter(eventData);
+            item.OnItemEnter(eventData);
+            target.OnItemAttach(eventData);
+            item.OnItemAttach(eventData);
             return true;
         }
 

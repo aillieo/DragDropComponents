@@ -12,7 +12,9 @@ namespace AillieoUtils
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+            GUILayout.BeginVertical("box");
             GUILayout.Label(((DragDropPair)target).GetDebugString(), new GUIStyle { richText = true });
+            GUILayout.EndVertical();
         }
 
         public override bool RequiresConstantRepaint()

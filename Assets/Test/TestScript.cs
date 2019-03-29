@@ -9,55 +9,55 @@ public class TestScript : MonoBehaviour {
 
     void TargetsOnEnter(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one * 1.2f;
-        Debug.Log("targetsOnEnter");
+        Debug.Log("targetsOnEnter  " + eventData.ToString());
     }
 
     void TargetsOnExit(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one;
-        Debug.Log("targetsOnExit");
+        Debug.Log("targetsOnExit  " + eventData.ToString());
     }
 
     void ItemsOnAttach(DragDropEventData eventData){
-        eventData.item.transform.SetParent(eventData.target.targetParent);
+        //eventData.item.transform.SetParent(eventData.target.targetParent);
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         eventData.item.transform.localScale = Vector3.one;
-        Debug.Log("itemsOnAttach");
+        Debug.Log("itemsOnAttach  " + eventData.ToString());
     }
 
     void ItemsOnDetach(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one * 1.2f;
-        Debug.Log("itemsOnDetach");
+        Debug.Log("itemsOnDetach  " + eventData.ToString());
     }
 
     void TargetOnAttach(DragDropEventData eventData){
         eventData.target.transform.localScale = Vector3.one;
-        Debug.Log("targetOnAttach");
+        Debug.Log("targetOnAttach  " + eventData.ToString());
     }
 
     void TargetOnDetach(DragDropEventData eventData){
-        eventData.item.transform.SetParent(eventData.target.targetParent);
+        //eventData.item.transform.SetParent(eventData.target.targetParent);
         //eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        Debug.Log("targetOnDetach");
+        Debug.Log("targetOnDetach  " + eventData.ToString());
     }
 
     void ItemsOnEnter(DragDropEventData eventData){
         //eventData.item.transform.localScale = Vector3.one * 1.2f;
-        Debug.Log("itemsOnEnter");
+        Debug.Log("itemsOnEnter  " + eventData.ToString());
     }
 
     void ItemsOnExit(DragDropEventData eventData){
         //eventData.item.transform.localScale = Vector3.one;
-        Debug.Log("itemsOnExit");
+        Debug.Log("itemsOnExit  " + eventData.ToString());
     }
 
     void ItemsOnSetFree(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one;
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        Debug.Log("itemsOnSetFree");
+        Debug.Log("itemsOnSetFree  " + eventData.ToString());
     }
 
     void ItemsOnClick(DragDropEventData eventData){
-        Debug.Log("itemsOnClick");
+        Debug.Log("itemsOnClick  " + eventData.ToString());
     }
 
 
@@ -82,11 +82,6 @@ public class TestScript : MonoBehaviour {
             item.AddCallback(DragDropEventTriggerType.ItemExit, ItemsOnExit);
             item.AddCallback(DragDropEventTriggerType.ItemSetFree, ItemsOnSetFree);
             item.AddCallback(DragDropEventTriggerType.ItemClick, ItemsOnClick);
-            DragDropTarget target = DragDropHelper.FindComponentUpward<DragDropTarget>(item.transform);
-            if (target != null)
-            {
-                DragDropHelper.InitializePair(item, target);
-            }
         }
     }
 }

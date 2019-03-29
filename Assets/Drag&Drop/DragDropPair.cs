@@ -15,10 +15,6 @@ namespace AillieoUtils
 
         protected Dictionary<DragDropEventTriggerType, DragDropEvent> callbacks = new Dictionary<DragDropEventTriggerType, DragDropEvent>();
 
-        [SerializeField]
-        [Tooltip("无视matchingChannel 可以与任何的matchingChannel匹配")]
-        public bool universalMatching;
-
 
         [SerializeField]
         [Tooltip("用于筛选可匹配的item和target")]
