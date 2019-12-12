@@ -13,7 +13,7 @@ namespace AillieoUtils
         ItemDetach = 3,
         ItemAttach = 4,
 
-        // for target only
+        // for item only
         ItemSetFree = 5,
         ItemClick = 6,
 

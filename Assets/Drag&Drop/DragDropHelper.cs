@@ -107,7 +107,7 @@ namespace AillieoUtils
                 item.OnItemExit(eventData);
                 item.OnSetFree(eventData);
             }
-            return items.Length;
+            return items.Count;
         }
     }
 

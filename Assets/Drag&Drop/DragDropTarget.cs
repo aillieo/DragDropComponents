@@ -37,7 +37,7 @@ namespace AillieoUtils
         }
 
         // 保存当前附着的item 按照附着时间先后顺序
-        List<DragDropItem> attachedItems = new List<DragDropItem>();
+        private List<DragDropItem> attachedItems = new List<DragDropItem>();
 
 
         private void OnEnable()
@@ -98,9 +98,9 @@ namespace AillieoUtils
             return true;
         }
 
-        public DragDropItem[] GetAllAttachedItems()
+        public IList<DragDropItem> GetAllAttachedItems()
         {
-            return attachedItems.ToArray();
+            return attachedItems;
         }
 
 

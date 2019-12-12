@@ -1,20 +1,26 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 namespace AillieoUtils
 {
-
-    public delegate void DragDropEvent(DragDropEventData dragDropEventData);
-
+    [Serializable]
+    public class DragDropEvent : UnityEvent<DragDropEventData> { }
 
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
     public abstract class DragDropPair : MonoBehaviour
     {
-
-        protected Dictionary<DragDropEventTriggerType, DragDropEvent> callbacks = new Dictionary<DragDropEventTriggerType, DragDropEvent>();
-
+        // 事件
+        [SerializeField]
+        protected DragDropEvent m_OnItemExit = new DragDropEvent();
+        [SerializeField]
+        protected DragDropEvent m_OnItemEnter = new DragDropEvent();
+        [SerializeField]
+        protected DragDropEvent m_OnItemDetach = new DragDropEvent();
+        [SerializeField]
+        protected DragDropEvent m_OnItemAttach = new DragDropEvent();
 
         [SerializeField]
         [Tooltip("用于筛选可匹配的item和target")]
@@ -45,39 +51,56 @@ namespace AillieoUtils
 
             //Debug.LogError(string.Format("name={0} event={1}",name,type));
 
-            bool handleEvent = false;
-            if (callbacks.ContainsKey(type))
+            var evt = GetEvent(type);
+            if (evt != null)
             {
-                callbacks[type](eventData);
-                handleEvent = true;
+                evt.Invoke(eventData);
+                return true;
             }
-            return handleEvent;
+            return false;
         }
 
-        public void AddCallback(DragDropEventTriggerType type, DragDropEvent function)
+        public void AddCallback(DragDropEventTriggerType type, UnityAction<DragDropEventData> function)
         {
-            if (callbacks.ContainsKey(type))
+            var evt = GetEvent(type);
+            if (evt != null)
             {
-                callbacks[type] += function;
+                evt.AddListener(function);
             }
-            callbacks[type] = function;
-        }
-
-        public void RemoveCallback(DragDropEventTriggerType type, DragDropEvent function)
-        {
-            if (callbacks.ContainsKey(type))
+            else
             {
-                callbacks[type] -= function;
-                if(callbacks[type].GetInvocationList().Length == 0)
-                {
-                    callbacks.Remove(type);
-                }
+                Debug.LogErrorFormat("Cant find event for type {0}", type);
             }
         }
 
-        public void OnDestroy()
+        public void RemoveCallback(DragDropEventTriggerType type, UnityAction<DragDropEventData> function)
         {
-            callbacks.Clear();
+            var evt = GetEvent(type);
+            if(evt != null)
+            {
+                evt.RemoveListener(function);
+            }
+            else
+            {
+                Debug.LogErrorFormat("Cant find event for type {0}", type);
+            }
+        }
+
+        protected virtual DragDropEvent GetEvent(DragDropEventTriggerType type)
+        {
+            switch (type)
+            {
+                case DragDropEventTriggerType.ItemExit:
+                    return m_OnItemExit;
+                case DragDropEventTriggerType.ItemEnter:
+                    return m_OnItemEnter;
+                case DragDropEventTriggerType.ItemDetach:
+                    return m_OnItemDetach;
+                case DragDropEventTriggerType.ItemAttach:
+                    return m_OnItemAttach;
+                default:
+                    return null;
+            }
         }
 
         public abstract string GetDebugString();

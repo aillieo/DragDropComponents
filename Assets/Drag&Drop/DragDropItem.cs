@@ -11,6 +11,12 @@ namespace AillieoUtils
     public class DragDropItem : DragDropPair, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
 
+        // 事件
+        [SerializeField]
+        protected DragDropEvent m_OnItemSetFree = new DragDropEvent();
+        [SerializeField]
+        protected DragDropEvent m_OnItemClick = new DragDropEvent();
+
         [SerializeField]
         [Tooltip("拖动期间的临时父节点")]
         private Transform m_parentWhenDragging;
@@ -339,6 +345,18 @@ namespace AillieoUtils
 
         #endregion 拖放事件接口
 
+        protected override DragDropEvent GetEvent(DragDropEventTriggerType type)
+        {
+            switch (type)
+            {
+                case DragDropEventTriggerType.ItemSetFree:
+                    return m_OnItemSetFree;
+                case DragDropEventTriggerType.ItemClick:
+                    return m_OnItemClick;
+                default:
+                    return base.GetEvent(type);
+            }
+        }
 
         void HandleDragDropEvent()
         {
