@@ -37,6 +37,7 @@ namespace AillieoUtils
         SerializedProperty m_OnItemEnter;
         SerializedProperty m_OnItemDetach;
         SerializedProperty m_OnItemAttach;
+        SerializedProperty m_OnItemDrag;
         SerializedProperty matchingChannel;
         SerializedProperty matchingTag;
         SerializedProperty m_OnItemSetFree;
@@ -52,6 +53,7 @@ namespace AillieoUtils
             m_OnItemEnter = serializedObject.FindProperty("m_OnItemEnter");
             m_OnItemDetach = serializedObject.FindProperty("m_OnItemDetach");
             m_OnItemAttach = serializedObject.FindProperty("m_OnItemAttach");
+            m_OnItemDrag = serializedObject.FindProperty("m_OnItemDrag");
             matchingChannel = serializedObject.FindProperty("matchingChannel");
             matchingTag = serializedObject.FindProperty("matchingTag");
             m_OnItemSetFree = serializedObject.FindProperty("m_OnItemSetFree");
@@ -81,6 +83,7 @@ namespace AillieoUtils
                 EditorGUILayout.PropertyField(m_OnItemAttach, new GUIContent("On Item Attach"));
                 EditorGUILayout.PropertyField(m_OnItemSetFree, new GUIContent("On Item Set Free"));
                 EditorGUILayout.PropertyField(m_OnItemClick, new GUIContent("On Item Click"));
+                EditorGUILayout.PropertyField(m_OnItemDrag, new GUIContent("On Item Drag"));
             }
 
             GUILayout.BeginVertical("box");

@@ -16,6 +16,7 @@ namespace AillieoUtils
         // for item only
         ItemSetFree = 5,
         ItemClick = 6,
+        ItemDrag = 7,
 
     }
 

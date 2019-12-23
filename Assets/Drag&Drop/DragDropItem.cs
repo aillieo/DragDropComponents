@@ -16,6 +16,8 @@ namespace AillieoUtils
         protected DragDropEvent m_OnItemSetFree = new DragDropEvent();
         [SerializeField]
         protected DragDropEvent m_OnItemClick = new DragDropEvent();
+        [SerializeField]
+        protected DragDropEvent m_OnItemDrag = new DragDropEvent();
 
         [SerializeField]
         [Tooltip("拖动期间的临时父节点")]
@@ -190,6 +192,8 @@ namespace AillieoUtils
                 return;
             }
 
+            OnItemDragged(DragDropEventData.current);
+
             if (rectTransform)
             {
                 Vector3 pointerPos;
@@ -294,6 +298,10 @@ namespace AillieoUtils
 
         #region 拖放事件接口
 
+        public void OnItemDragged(DragDropEventData eventData)
+        {
+            HandleEventForType(DragDropEventTriggerType.ItemDrag, eventData);
+        }
 
         public void OnItemAttach(DragDropEventData eventData)
         {
@@ -353,6 +361,8 @@ namespace AillieoUtils
                     return m_OnItemSetFree;
                 case DragDropEventTriggerType.ItemClick:
                     return m_OnItemClick;
+                case DragDropEventTriggerType.ItemDrag:
+                    return m_OnItemDrag;
                 default:
                     return base.GetEvent(type);
             }

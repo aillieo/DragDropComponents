@@ -45,6 +45,11 @@ public class TestScript : MonoBehaviour {
         Debug.Log("itemsOnExit  " + eventData.ToString());
     }
 
+    public void ItemsOnDrag(DragDropEventData eventData)
+    {
+        Debug.Log("ItemsOnDrag  " + eventData.ToString());
+    }
+
     public void ItemsOnSetFree(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one;
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
@@ -76,6 +81,7 @@ public class TestScript : MonoBehaviour {
             item.AddCallback(DragDropEventTriggerType.ItemExit, ItemsOnExit);
             item.AddCallback(DragDropEventTriggerType.ItemSetFree, ItemsOnSetFree);
             item.AddCallback(DragDropEventTriggerType.ItemClick, ItemsOnClick);
+            item.AddCallback(DragDropEventTriggerType.ItemDrag, ItemsOnDrag);
         }
     }
 }
