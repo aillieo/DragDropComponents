@@ -61,6 +61,7 @@ namespace AillieoUtils
             m_parentWhenDragging = serializedObject.FindProperty("m_parentWhenDragging");
             m_longPressDetach = serializedObject.FindProperty("m_longPressDetach");
             m_fallbackTarget = serializedObject.FindProperty("m_fallbackTarget");
+            displayEvents = !Application.isPlaying;
         }
 
         public override void OnInspectorGUI()
@@ -86,9 +87,12 @@ namespace AillieoUtils
                 EditorGUILayout.PropertyField(m_OnItemDrag, new GUIContent("On Item Drag"));
             }
 
-            GUILayout.BeginVertical("box");
-            GUILayout.Label(dragDropItem.GetDebugString(), DragDropDrawer.LabelStyle);
-            GUILayout.EndVertical();
+            if (Application.isPlaying)
+            {
+                GUILayout.BeginVertical("box");
+                GUILayout.Label(dragDropItem.GetDebugString(), DragDropDrawer.LabelStyle);
+                GUILayout.EndVertical();
+            }
 
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
 
@@ -130,6 +134,7 @@ namespace AillieoUtils
             matchingTag = serializedObject.FindProperty("matchingTag");
             m_maxItemCount = serializedObject.FindProperty("m_maxItemCount");
             m_replaceItem = serializedObject.FindProperty("m_replaceItem");
+            displayEvents = !Application.isPlaying;
         }
 
         public override void OnInspectorGUI()
@@ -150,9 +155,12 @@ namespace AillieoUtils
                 EditorGUILayout.PropertyField(m_OnItemAttach, new GUIContent("On Item Attach"));
             }
 
-            GUILayout.BeginVertical("box");
-            GUILayout.Label(dragDropTarget.GetDebugString(), DragDropDrawer.LabelStyle);
-            GUILayout.EndVertical();
+            if(Application.isPlaying)
+            {
+                GUILayout.BeginVertical("box");
+                GUILayout.Label(dragDropTarget.GetDebugString(), DragDropDrawer.LabelStyle);
+                GUILayout.EndVertical();
+            }
 
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }

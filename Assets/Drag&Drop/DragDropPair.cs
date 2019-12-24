@@ -15,16 +15,22 @@ namespace AillieoUtils
         // 事件
         [SerializeField]
         protected DragDropEvent m_OnItemExit = new DragDropEvent();
+        public DragDropEvent onItemExit { get { return m_OnItemExit; } set { m_OnItemExit = value; } }
         [SerializeField]
         protected DragDropEvent m_OnItemEnter = new DragDropEvent();
+        public DragDropEvent onItemEnter { get { return m_OnItemEnter; } set { m_OnItemEnter = value; } }
         [SerializeField]
         protected DragDropEvent m_OnItemDetach = new DragDropEvent();
+        public DragDropEvent onItemDetach { get { return m_OnItemDetach; } set { m_OnItemDetach = value; } }
         [SerializeField]
         protected DragDropEvent m_OnItemAttach = new DragDropEvent();
+        public DragDropEvent onItemAttach { get { return m_OnItemAttach; } set { m_OnItemAttach = value; } }
+
+        public static readonly int universalMatching = 2147483647; // (2 << 30) - 1
 
         [SerializeField]
         [Tooltip("用于筛选可匹配的item和target")]
-        public int matchingChannel;
+        public int matchingChannel = universalMatching;
 
 
         [SerializeField]

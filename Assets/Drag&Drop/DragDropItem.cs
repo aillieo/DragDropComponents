@@ -14,10 +14,13 @@ namespace AillieoUtils
         // 事件
         [SerializeField]
         protected DragDropEvent m_OnItemSetFree = new DragDropEvent();
+        public DragDropEvent onItemSetFree { get { return m_OnItemSetFree; } set { m_OnItemSetFree = value; } }
         [SerializeField]
         protected DragDropEvent m_OnItemClick = new DragDropEvent();
+        public DragDropEvent onItemClick { get { return m_OnItemClick; } set { m_OnItemClick = value; } }
         [SerializeField]
         protected DragDropEvent m_OnItemDrag = new DragDropEvent();
+        public DragDropEvent onItemDrag { get { return m_OnItemDrag; } set { m_OnItemDrag = value; } }
 
         [SerializeField]
         [Tooltip("拖动期间的临时父节点")]
@@ -192,8 +195,6 @@ namespace AillieoUtils
                 return;
             }
 
-            OnItemDragged(DragDropEventData.current);
-
             if (rectTransform)
             {
                 Vector3 pointerPos;
@@ -202,6 +203,8 @@ namespace AillieoUtils
                     rectTransform.position = pointerPos;
                 }
             }
+            
+            OnItemDragged(DragDropEventData.current);
 
             DragDropTarget newTarget = DragDropRegistry.Instance.FindDropTarget(eventData,this);
             if (newTarget != DragDropEventData.current.target)
@@ -306,7 +309,7 @@ namespace AillieoUtils
         public void OnItemAttach(DragDropEventData eventData)
         {
             attachedTarget = eventData.target;
-            transform.SetParent(attachedTarget.targetParent,false);
+            transform.SetParent(attachedTarget.targetParent,true);
             HandleEventForType(DragDropEventTriggerType.ItemAttach, eventData);
         }
 
