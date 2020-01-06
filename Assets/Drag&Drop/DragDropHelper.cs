@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -40,47 +40,49 @@ namespace AillieoUtils
             scrollRect.OnBeginDrag(eventData);
         }
 
-        public static bool TryAddItem(DragDropItem item, DragDropTarget target)
+        public static bool TryAddItem(DragDropItem item, DragDropTarget target, bool sendCallback = true)
         {
+            if (item == null || target == null)
+            {
+                return false;
+            }
+            if (!(item.isActiveAndEnabled && target.isActiveAndEnabled))
+            {
+                return false;
+            }
             if (item.attachedTarget != null)
             {
                 return false;
             }
-            if(!IsChannelMatch(target, item))
-            {
-                return false;
-            }
-            if(target.currentItemCount >= target.maxItemCount)
+            if (!IsChannelMatch(target, item))
             {
                 return false;
             }
 
-            DragDropEventData eventData = new DragDropEventData();
+            DragDropEventData eventData = new DragDropEventData(!sendCallback);
             eventData.Reset();
-            eventData.external = true;
             eventData.target = target;
             eventData.item = item;
-            target.OnItemEnter(eventData);
-            item.OnItemEnter(eventData);
             target.OnItemAttach(eventData);
             item.OnItemAttach(eventData);
             return true;
         }
 
-
-        public static bool TryRemoveItem(DragDropItem item, DragDropTarget target)
+        public static bool TryRemoveItem(DragDropItem item, DragDropTarget target, bool sendCallback = true)
         {
-            if(item.attachedTarget == target && target.HasItemAttached(item))
+            if (item == null || target == null)
             {
-                DragDropEventData eventData = new DragDropEventData();
+                return false;
+            }
+
+            if (item.attachedTarget == target && target.HasItemAttached(item))
+            {
+                DragDropEventData eventData = new DragDropEventData(!sendCallback);
                 eventData.Reset();
-                eventData.external = true;
                 eventData.target = target;
                 eventData.item = item;
                 target.OnItemDetach(eventData);
                 item.OnItemDetach(eventData);
-                target.OnItemExit(eventData);
-                item.OnItemExit(eventData);
                 item.OnSetFree(eventData);
                 return true;
             }
@@ -90,25 +92,21 @@ namespace AillieoUtils
             }
         }
 
-
-        public static int RemoveAllItems(DragDropTarget target)
+        public static int RemoveAllItems(DragDropTarget target, bool sendCallback = true)
         {
             var items = target.GetAllAttachedItems();
-            DragDropEventData eventData = new DragDropEventData();
+            DragDropEventData eventData = new DragDropEventData(!sendCallback);
             eventData.Reset();
-            eventData.external = true;
             eventData.target = target;
-            foreach (var item in items)
+            for (int count = items.Count, i = count - 1; i >= 0; --i)
             {
+                DragDropItem item = items[i];
                 eventData.item = item;
                 target.OnItemDetach(eventData);
                 item.OnItemDetach(eventData);
-                target.OnItemExit(eventData);
-                item.OnItemExit(eventData);
                 item.OnSetFree(eventData);
             }
             return items.Count;
         }
     }
-
 }

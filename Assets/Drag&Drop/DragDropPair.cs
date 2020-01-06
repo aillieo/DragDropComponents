@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.Events;
@@ -26,7 +26,7 @@ namespace AillieoUtils
         protected DragDropEvent m_OnItemAttach = new DragDropEvent();
         public DragDropEvent onItemAttach { get { return m_OnItemAttach; } set { m_OnItemAttach = value; } }
 
-        public static readonly int universalMatching = 2147483647; // (2 << 30) - 1
+        public static readonly int universalMatching = -1;
 
         [SerializeField]
         [Tooltip("用于筛选可匹配的item和target")]
@@ -56,6 +56,11 @@ namespace AillieoUtils
         {
 
             //Debug.LogError(string.Format("name={0} event={1}",name,type));
+
+            if(eventData.dummy)
+            {
+                return false;
+            }
 
             var evt = GetEvent(type);
             if (evt != null)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace AillieoUtils
 {
 
-    public class DragDropItem : DragDropPair, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
+    public class DragDropItem : DragDropPair, IPointerDownHandler, IPointerUpHandler, IDragHandler, IBeginDragHandler, IEndDragHandler, IInitializePotentialDragHandler
     {
 
         // 事件
@@ -68,25 +68,8 @@ namespace AillieoUtils
 
         bool waitingForDragDropStart = false;
 
-
-        [SerializeField]
-        [Tooltip("如果被挤下来 会放到哪个节点下")]
-        private DragDropTarget m_fallbackTarget;
-        public DragDropTarget fallbackTarget
-        {
-            get
-            {
-                return m_fallbackTarget;
-            }
-
-            set
-            {
-                m_fallbackTarget = value;
-            }
-        }
-
-
-        DragDropTarget lastTarget = null;
+        DragDropTarget m_lastTarget = null;
+        public DragDropTarget lastTarget { get { return m_lastTarget; } private set { m_lastTarget = value; } }
 
         WaitForSeconds m_waitForSeconds;
         WaitForSeconds waitForSeconds {
@@ -114,26 +97,16 @@ namespace AillieoUtils
 
         void OnEnable()
         {
-            Transform parent = transform.parent;
-            if(parent != null)
-            {
-                DragDropTarget target = parent.gameObject.GetComponent<DragDropTarget>();
-                if(target != null)
-                {
-                    DragDropHelper.TryAddItem(this, target);
-                    return;
-                }
-            }
-            Debug.LogError("parent is not a target");
-            gameObject.SetActive(false);
+            DragDropRegistry.Instance.UnRegister(this);
         }
 
         void OnDisable()
         {
             if(!freeItem)
             {
-                DragDropHelper.TryRemoveItem(this, attachedTarget);
+                DragDropHelper.TryRemoveItem(this, this.attachedTarget);
             }
+            DragDropRegistry.Instance.UnRegister(this);
         }
 
 
@@ -151,10 +124,6 @@ namespace AillieoUtils
             if (attachedTarget)
             {
                 lastTarget = attachedTarget;
-            }
-            else
-            {
-                Debug.LogError("will detach from a non-target parent");
             }
  
             if(delayDetach && !freeItem)
@@ -231,59 +200,15 @@ namespace AillieoUtils
 
             if (DragDropEventData.current.valid)
             {
-                DragDropItem replacedItem = null;
-                if(DragDropEventData.current.target.CheckCanAttachItem(DragDropEventData.current, out replacedItem))
-                {
-                    if(replacedItem)
-                    {
-                        // 旧item 离开
-                        DragDropEventData.current.isReplaced = true;
-                        DragDropEventData.current.item = replacedItem;
-                        DragDropEventData.current.target.OnItemDetach(DragDropEventData.current);
-                        replacedItem.OnItemDetach(DragDropEventData.current);
-
-                        // 新item 附着
-                        DragDropEventData.current.isReplaced = false;
-                        DragDropEventData.current.item = this;
-                        DragDropEventData.current.target.OnItemAttach(DragDropEventData.current);
-                        OnItemAttach(DragDropEventData.current);
-
-                        // 旧item 附着到新item原来的target 完成交换
-                        DragDropEventData.current.isReplaced = true;
-                        DragDropEventData.current.item = replacedItem;
-                        DragDropEventData.current.target = lastTarget;
-                        if (DragDropEventData.current.valid)
-                        {
-                            lastTarget.OnItemAttach(DragDropEventData.current);
-                            replacedItem.OnItemAttach(DragDropEventData.current);
-                        }
-                        else
-                        {
-                            replacedItem.attachedTarget = null;
-                            replacedItem.OnSetFree(DragDropEventData.current);
-                        }
-                    }
-                    else
-                    {
-                        DragDropEventData.current.target.OnItemAttach(DragDropEventData.current);
-                        OnItemAttach(DragDropEventData.current);
-                    }
-
-                }
-                else
-                {
-                    DragDropEventData.current.target.OnItemExit(DragDropEventData.current);
-                    OnItemExit(DragDropEventData.current);
-                }
+                DragDropEventData.current.target.OnItemAttach(DragDropEventData.current);
+                OnItemAttach(DragDropEventData.current);
             }
             else
             {
                 OnSetFree(DragDropEventData.current);
             }
 
-
             DragDropEventData.current.Reset();
-
         }
 
 
@@ -295,6 +220,10 @@ namespace AillieoUtils
             }
         }
 
+        public void OnInitializePotentialDrag(PointerEventData eventData)
+        {
+
+        }
 
         #endregion 原生事件接口
 
@@ -309,7 +238,6 @@ namespace AillieoUtils
         public void OnItemAttach(DragDropEventData eventData)
         {
             attachedTarget = eventData.target;
-            transform.SetParent(attachedTarget.targetParent,true);
             HandleEventForType(DragDropEventTriggerType.ItemAttach, eventData);
         }
 
@@ -331,22 +259,7 @@ namespace AillieoUtils
 
         public void OnSetFree(DragDropEventData eventData)
         {
-            if(lastTarget && lastTarget.isActiveAndEnabled && !eventData.external)
-            {
-                eventData.target = lastTarget;
-                eventData.target.OnItemAttach(eventData);
-                OnItemAttach(eventData);
-            }
-            else if (fallbackTarget && fallbackTarget.isActiveAndEnabled && !eventData.external)
-            {
-                eventData.target = lastTarget;
-                eventData.target.OnItemAttach(eventData);
-                OnItemAttach(eventData);
-            }
-            else
-            {
-                HandleEventForType(DragDropEventTriggerType.ItemSetFree, eventData);
-            }
+            HandleEventForType(DragDropEventTriggerType.ItemSetFree, eventData);
         }
 
         public void OnClick(DragDropEventData eventData)
@@ -435,11 +348,7 @@ namespace AillieoUtils
 
         public override string GetDebugString()
         {
-#if UNITY_EDITOR
             return string.Format("<b>matchingChannel</b> = B{0}\n<b>attachedTarget</b> = {1}\n<b>lastTarget</b> = {2}\n<b>currentEventData</b> = {3}", Convert.ToString(matchingChannel, 2),attachedTarget,lastTarget,DragDropEventData.current);
-#else
-            return "";
-#endif
         }
 
     }

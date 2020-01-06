@@ -7,7 +7,9 @@ namespace AillieoUtils
 {
     public class DragDropRegistry : Singleton<DragDropRegistry>
     {
-        LinkedList<DragDropTarget> managedTargets = new LinkedList<DragDropTarget>();
+        readonly LinkedList<DragDropTarget> managedTargets = new LinkedList<DragDropTarget>();
+
+        readonly HashSet<DragDropItem> managedItems = new HashSet<DragDropItem>();
 
         public LinkedListNode<DragDropTarget> Register(DragDropTarget target)
         {
@@ -18,7 +20,17 @@ namespace AillieoUtils
         {
             managedTargets.Remove(registerHandle);
         }
-        
+
+        public void Register(DragDropItem item)
+        {
+            managedItems.Add(item);
+        }
+
+        public void UnRegister(DragDropItem item)
+        {
+            managedItems.Remove(item);
+        }
+
         public DragDropTarget FindDropTarget(PointerEventData pointerEventData, DragDropItem dragDropItem)
         {
             foreach (var ddt in managedTargets)

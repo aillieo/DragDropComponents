@@ -18,6 +18,7 @@ public class TestScript : MonoBehaviour {
     }
 
     public void ItemsOnAttach(DragDropEventData eventData){
+        eventData.item.transform.SetParent(eventData.target.transform, false);
         eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         eventData.item.transform.localScale = Vector3.one;
         Debug.Log("itemsOnAttach  " + eventData.ToString());
@@ -52,7 +53,7 @@ public class TestScript : MonoBehaviour {
 
     public void ItemsOnSetFree(DragDropEventData eventData){
         eventData.item.transform.localScale = Vector3.one;
-        eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        //eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         Debug.Log("itemsOnSetFree  " + eventData.ToString());
     }
 
@@ -82,6 +83,12 @@ public class TestScript : MonoBehaviour {
             item.AddCallback(DragDropEventTriggerType.ItemSetFree, ItemsOnSetFree);
             item.AddCallback(DragDropEventTriggerType.ItemClick, ItemsOnClick);
             item.AddCallback(DragDropEventTriggerType.ItemDrag, ItemsOnDrag);
+
+            DragDropTarget target = DragDropHelper.FindComponentUpward<DragDropTarget>(item.transform);
+            if (target != null)
+            {
+                DragDropHelper.TryAddItem(item, target, false);
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using System.Linq;
 
 namespace AillieoUtils
 {
@@ -24,6 +25,58 @@ namespace AillieoUtils
             return Application.isPlaying;
         }
 
+        private static int channelMin = 0;
+        private static int channelMax = 31;
+        private static string[] channels = Enumerable.Range(channelMin, channelMax).Select(i => i.ToString()).ToArray();
+        public static void DrawMatchingChannel(SerializedProperty serializedProperty, GUIContent label, params GUILayoutOption[] options)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            //EditorGUILayout.LabelField(label);
+
+            EditorGUILayout.PropertyField(serializedProperty, label);
+
+            int channel = serializedProperty.intValue;
+
+            int oldMask = 0;
+            for (int i = channelMin; i <= channelMax; ++i)
+            {
+                if ((channel & (1 << i)) != 0)
+                {
+                    oldMask |= (1 << i);
+                }
+            }
+
+            int newMask = EditorGUILayout.MaskField(GUIContent.none, oldMask, channels, options);
+            if (newMask != oldMask)
+            {
+                int newChannelValue = 0;
+                if (newMask != -1)
+                {
+                    for (int i = channelMin; i <= channelMax; ++i)
+                    {
+                        if ((newMask & (1 << i)) != 0)
+                        {
+                            newChannelValue |= (1 << i);
+                        }
+                    }
+                }
+                else
+                {
+                    newChannelValue = -1;
+                }
+
+                channel = newChannelValue;
+            }
+
+            if (channel != serializedProperty.intValue)
+            {
+                serializedProperty.intValue = channel;
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+        }
     }
 
     [CustomEditor(typeof(DragDropItem))]
@@ -44,7 +97,6 @@ namespace AillieoUtils
         SerializedProperty m_OnItemClick;
         SerializedProperty m_parentWhenDragging;
         SerializedProperty m_longPressDetach;
-        SerializedProperty m_fallbackTarget;
 
         private void OnEnable()
         {
@@ -60,7 +112,6 @@ namespace AillieoUtils
             m_OnItemClick = serializedObject.FindProperty("m_OnItemClick");
             m_parentWhenDragging = serializedObject.FindProperty("m_parentWhenDragging");
             m_longPressDetach = serializedObject.FindProperty("m_longPressDetach");
-            m_fallbackTarget = serializedObject.FindProperty("m_fallbackTarget");
             displayEvents = !Application.isPlaying;
         }
 
@@ -69,11 +120,10 @@ namespace AillieoUtils
 
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(matchingChannel, new GUIContent("Matching Channel"));
+            DragDropDrawer.DrawMatchingChannel(matchingChannel, new GUIContent("Matching Channel"));
             EditorGUILayout.PropertyField(matchingTag, new GUIContent("Matching Tag"));
             EditorGUILayout.PropertyField(m_parentWhenDragging, new GUIContent("Parent When Dragging"));
             EditorGUILayout.PropertyField(m_longPressDetach, new GUIContent("Long Press Detach"));
-            EditorGUILayout.PropertyField(m_fallbackTarget, new GUIContent("Fallback Target"));
 
             displayEvents = EditorGUILayout.Foldout(displayEvents, "Serialized DragDropEvents");
             if (displayEvents)
@@ -94,7 +144,7 @@ namespace AillieoUtils
                 GUILayout.EndVertical();
             }
 
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            serializedObject.ApplyModifiedProperties();
 
         }
 
@@ -119,8 +169,6 @@ namespace AillieoUtils
         SerializedProperty m_OnItemAttach;
         SerializedProperty matchingChannel;
         SerializedProperty matchingTag;
-        SerializedProperty m_maxItemCount;
-        SerializedProperty m_replaceItem;
 
         private void OnEnable()
         {
@@ -132,8 +180,6 @@ namespace AillieoUtils
             m_OnItemAttach = serializedObject.FindProperty("m_OnItemAttach");
             matchingChannel = serializedObject.FindProperty("matchingChannel");
             matchingTag = serializedObject.FindProperty("matchingTag");
-            m_maxItemCount = serializedObject.FindProperty("m_maxItemCount");
-            m_replaceItem = serializedObject.FindProperty("m_replaceItem");
             displayEvents = !Application.isPlaying;
         }
 
@@ -141,10 +187,8 @@ namespace AillieoUtils
         {
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(matchingChannel, new GUIContent("Matching Channel"));
+            DragDropDrawer.DrawMatchingChannel(matchingChannel, new GUIContent("Matching Channel"));
             EditorGUILayout.PropertyField(matchingTag, new GUIContent("Matching Tag"));
-            EditorGUILayout.PropertyField(m_maxItemCount, new GUIContent("Max Item Count"));
-            EditorGUILayout.PropertyField(m_replaceItem, new GUIContent("Replace Item"));
 
             displayEvents = EditorGUILayout.Foldout(displayEvents, "Serialized DragDropEvents");
             if (displayEvents)
@@ -162,7 +206,7 @@ namespace AillieoUtils
                 GUILayout.EndVertical();
             }
 
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            serializedObject.ApplyModifiedProperties();
         }
 
         public override bool RequiresConstantRepaint()
