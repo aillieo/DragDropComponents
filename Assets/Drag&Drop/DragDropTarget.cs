@@ -57,8 +57,8 @@ namespace AillieoUtils
 
         public void OnItemAttach(DragDropEventData eventData)
         {
-            HandleEventForType(DragDropEventTriggerType.ItemAttach, eventData);
             attachedItems.Add(eventData.item);
+            HandleEventForType(DragDropEventTriggerType.ItemAttach, eventData);
         }
 
         #endregion 拖放事件接口
