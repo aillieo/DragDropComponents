@@ -209,10 +209,7 @@ namespace AillieoUtils
             DragDropEventData.current.item = this;
             DragDropEventData.current.eligibleForClick = true;
 
-            if (attachedTarget)
-            {
-                lastTarget = attachedTarget;
-            }
+            lastTarget = attachedTarget;
 
             waitingForDragDropStart = false;
             if (delayDetach && !freeItem)
