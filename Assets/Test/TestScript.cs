@@ -4,65 +4,15 @@ using UnityEngine;
 using System;
 using AillieoUtils;
 
-public class TestScript : MonoBehaviour {
+public class TestScript : MonoBehaviour
+{
+    public DragDropItem[] avatars;
+    public DragDropTarget[] platforms;
+    public DragDropTarget pool;
 
-
-    public void TargetsOnEnter(DragDropEventData eventData){
-        eventData.target.transform.localScale = Vector3.one * 1.2f;
-        Debug.Log("targetsOnEnter  " + eventData.ToString());
-    }
-
-    public void TargetsOnExit(DragDropEventData eventData){
-        eventData.target.transform.localScale = Vector3.one;
-        Debug.Log("targetsOnExit  " + eventData.ToString());
-    }
-
-    public void ItemsOnAttach(DragDropEventData eventData){
-        eventData.item.transform.SetParent(eventData.target.transform, false);
-        eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        eventData.item.transform.localScale = Vector3.one;
-        Debug.Log("itemsOnAttach  " + eventData.ToString());
-    }
-
-    public void ItemsOnDetach(DragDropEventData eventData){
-        eventData.item.transform.localScale = Vector3.one * 1.2f;
-        Debug.Log("itemsOnDetach  " + eventData.ToString());
-    }
-
-    public void TargetOnAttach(DragDropEventData eventData){
-        eventData.target.transform.localScale = Vector3.one;
-        Debug.Log("targetOnAttach  " + eventData.ToString());
-    }
-
-    public void TargetOnDetach(DragDropEventData eventData){
-        Debug.Log("targetOnDetach  " + eventData.ToString());
-    }
-
-    public void ItemsOnEnter(DragDropEventData eventData){
-        Debug.Log("itemsOnEnter  " + eventData.ToString());
-    }
-
-    public void ItemsOnExit(DragDropEventData eventData){
-        Debug.Log("itemsOnExit  " + eventData.ToString());
-    }
-
-    public void ItemsOnDrag(DragDropEventData eventData)
+    void Start()
     {
-        Debug.Log("ItemsOnDrag  " + eventData.ToString());
-    }
-
-    public void ItemsOnSetFree(DragDropEventData eventData){
-        eventData.item.transform.localScale = Vector3.one;
-        //eventData.item.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        Debug.Log("itemsOnSetFree  " + eventData.ToString());
-    }
-
-    public void ItemsOnClick(DragDropEventData eventData){
-        Debug.Log("itemsOnClick  " + eventData.ToString());
-    }
-
-
-    void Start() {
+        // Add callbacks for drag-drop items and targets
         var allTargets = GetComponentsInChildren<DragDropTarget>();
         var allItems = GetComponentsInChildren<DragDropItem>();
 
@@ -90,5 +40,122 @@ public class TestScript : MonoBehaviour {
                 DragDropHelper.TryAddItem(item, target, false);
             }
         }
+
+        // Init tags & channels
+        for(int i = 0; i < avatars.Length; ++ i)
+        {
+            avatars[i].matchingTag = i;
+            avatars[i].matchingChannel = DragDropPair.universalMatching;
+        }
+
+        for (int i = 0; i < platforms.Length; ++i)
+        {
+            platforms[i].matchingTag = i + 1;
+            platforms[i].matchingChannel = DragDropPair.universalMatching;
+        }
+
+        pool.matchingTag = -1;
+        pool.matchingChannel = DragDropPair.universalMatching;
+
     }
+
+    public void TargetsOnEnter(DragDropEventData eventData)
+    {
+
+    }
+
+    public void TargetsOnExit(DragDropEventData eventData)
+    {
+
+    }
+
+    public void TargetOnAttach(DragDropEventData eventData)
+    {
+
+    }
+
+    public void TargetOnDetach(DragDropEventData eventData)
+    {
+    
+    }
+
+    public void ItemsOnEnter(DragDropEventData eventData)
+    {
+        if (eventData.target.matchingTag > 0)
+        {
+            eventData.target.transform.Find("Fx_01").gameObject.SetActive(true);
+        }
+    }
+
+    public void ItemsOnExit(DragDropEventData eventData)
+    {
+        if (eventData.target.matchingTag > 0)
+        {
+            eventData.target.transform.Find("Fx_01").gameObject.SetActive(false);
+        }
+    }
+
+    public void ItemsOnDrag(DragDropEventData eventData)
+    {
+        Debug.Log("ItemsOnDrag  " + eventData.ToString());
+    }
+
+    public void ItemsOnSetFree(DragDropEventData eventData)
+    {
+        DragDropHelper.TryAddItem(eventData.item, pool);
+    }
+
+    public void ItemsOnClick(DragDropEventData eventData)
+    {
+        Debug.Log("itemsOnClick  " + eventData.ToString());
+    }
+
+    public void ItemsOnAttach(DragDropEventData eventData)
+    {
+        if (eventData.target.matchingTag > 0)
+        {
+            if (eventData.target.currentItemCount > 1)
+            {
+                var item = eventData.target.GetAllAttachedItems()[0];
+                var lastTarget = eventData.item.lastTarget;
+
+                DragDropHelper.TryRemoveItem(item, item.attachedTarget, false);
+
+                if (lastTarget != null)
+                {
+                    DragDropHelper.TryAddItem(item, lastTarget);
+                }
+            }
+
+            eventData.target.transform.Find("Fx_01").gameObject.SetActive(false);
+            eventData.target.transform.Find("Fx_02").gameObject.SetActive(true);
+
+            eventData.item.transform.Find("Avatar").gameObject.SetActive(false);
+            eventData.item.transform.Find("Array").gameObject.SetActive(true);
+        }
+        else
+        {
+            eventData.item.transform.Find("Avatar").gameObject.SetActive(true);
+            eventData.item.transform.Find("Array").gameObject.SetActive(false);
+        }
+
+        eventData.item.transform.SetParent(eventData.target.transform, false);
+        RectTransform rect = eventData.item.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.one * 0.5f;
+        rect.anchorMax = Vector2.one * 0.5f;
+        rect.anchoredPosition = Vector2.zero;
+    }
+
+    public void ItemsOnDetach(DragDropEventData eventData)
+    {
+        if (eventData.target.matchingTag > 0)
+        {
+            eventData.target.transform.Find("Fx_01").gameObject.SetActive(false);
+            eventData.target.transform.Find("Fx_02").gameObject.SetActive(false);
+        }
+
+        eventData.item.transform.Find("Avatar").gameObject.SetActive(false);
+        eventData.item.transform.Find("Array").gameObject.SetActive(true);
+    }
+
 }
