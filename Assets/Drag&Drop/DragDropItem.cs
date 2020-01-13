@@ -103,6 +103,11 @@ namespace AillieoUtils
             {
                 DragDropHelper.TryRemoveItem(this, this.attachedTarget);
             }
+
+            m_parentWhenDragging = null;
+            m_waitForSeconds = null;
+            lastTarget = null;
+
             DragDropRegistry.Instance.UnRegister(this);
         }
 
