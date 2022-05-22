@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace AillieoUtils
 {
-    internal static class DragDropHelper
+    public static class DragDropHelper
     {
 
         public static bool IsChannelMatch(DragDropTarget target, DragDropItem item)
