@@ -1,12 +1,33 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace AillieoUtils
 {
-    public class DragDropRegistry : Singleton<DragDropRegistry>
+    public class DragDropRegistry // : Singleton<DragDropRegistry>
     {
+        private static DragDropRegistry m_instance = null;
+        private DragDropRegistry() { }
+
+        public static DragDropRegistry Instance
+        {
+            get
+            {
+                if (m_instance == null)
+                {
+                    m_instance = new DragDropRegistry();
+                }
+
+                return m_instance;
+            }
+        }
+
+        public static void Destroy()
+        {
+            m_instance = null;
+        }
+
         readonly LinkedList<DragDropTarget> managedTargets = new LinkedList<DragDropTarget>();
 
         readonly HashSet<DragDropItem> managedItems = new HashSet<DragDropItem>();

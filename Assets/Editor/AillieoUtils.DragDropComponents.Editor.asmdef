@@ -1,0 +1,18 @@
+{
+    "name": "AillieoUtils.DragDropComponents.Editor",
+    "rootNamespace": "",
+    "references": [
+        "AillieoUtils.DragDropComponents"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
